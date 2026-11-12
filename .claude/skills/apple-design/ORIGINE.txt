@@ -1,0 +1,2 @@
+Fonte: https://github.com/dickwu/apple-design-skill (commit ff4ebdd, 2026-10-28)
+Aggiornare: ricopiare SKILL.md, references/ e scripts/ dal repository.
