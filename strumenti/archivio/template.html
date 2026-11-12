@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Archivio componenti</title>
+<meta name="theme-color" content="#1f6f5c">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icona.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icona.svg">
+<style>
+:root {
+  --bg: #f6f7f5; --surface: #ffffff; --text: #1c2321; --muted: #5f6b67;
+  --border: #dde2df; --accent: #1f6f5c; --accent-text: #ffffff;
+  --warn-bg: #fff1c2; --warn-text: #6b4e00; --err-bg: #ffd9d6; --err-text: #8a1c14;
+  --thumb-bg: #eef1ef;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121615; --surface: #1b2120; --text: #e6ebe9; --muted: #9aa6a2;
+    --border: #2d3634; --accent: #4fbf9f; --accent-text: #0b1a15;
+    --warn-bg: #4a3b0c; --warn-text: #ffe08a; --err-bg: #4f1a16; --err-text: #ffb4ab;
+    --thumb-bg: #232b29;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--text);
+  font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+header { padding: 16px; max-width: 1200px; margin: 0 auto; }
+h1 { margin: 0 0 4px; font-size: 1.4rem; }
+#conteggio { color: var(--muted); margin: 0 0 12px; font-size: .9rem; }
+.controlli { display: grid; gap: 8px; grid-template-columns: 1fr; }
+@media (min-width: 720px) { .controlli { grid-template-columns: 2fr 1fr 1fr 1fr; } }
+input, select {
+  width: 100%; padding: 10px 12px; font: inherit; color: var(--text);
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+}
+main { max-width: 1200px; margin: 0 auto; padding: 0 16px 32px; }
+#lista {
+  display: grid; gap: 12px; padding: 0; margin: 0; list-style: none;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+}
+.scheda {
+  display: flex; flex-direction: column; width: 100%; padding: 0; text-align: left;
+  background: var(--surface); color: inherit; font: inherit; cursor: pointer;
+  border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+}
+.scheda:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.anteprima {
+  aspect-ratio: 4 / 3; width: 100%; object-fit: contain; background: var(--thumb-bg);
+  display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: .85rem;
+}
+.corpo { padding: 10px 12px 12px; }
+.nome { font-weight: 600; margin: 0 0 4px; overflow-wrap: anywhere; }
+.meta { color: var(--muted); font-size: .85rem; margin: 0; }
+.badge {
+  display: inline-block; font-size: .75rem; font-weight: 600; padding: 2px 8px;
+  border-radius: 999px; margin-top: 6px;
+}
+.badge.ipotesi { background: var(--warn-bg); color: var(--warn-text); }
+.badge.da_identificare { background: var(--err-bg); color: var(--err-text); }
+.vuoto { color: var(--muted); text-align: center; padding: 32px 0; }
+dialog {
+  width: min(760px, calc(100vw - 16px)); max-height: calc(100dvh - 16px); padding: 0;
+  border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: var(--text);
+}
+dialog::backdrop { background: rgb(0 0 0 / .55); }
+.dlg-testa {
+  position: sticky; top: 0; display: flex; gap: 8px; align-items: center; justify-content: space-between;
+  padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--border);
+}
+.dlg-testa h2 { margin: 0; font-size: 1.15rem; overflow-wrap: anywhere; }
+.chiudi {
+  flex: none; font: inherit; padding: 6px 12px; border-radius: 8px; cursor: pointer;
+  background: var(--thumb-bg); color: var(--text); border: 1px solid var(--border);
+}
+.dlg-corpo { padding: 16px; }
+.dlg-corpo h3 { font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 20px 0 6px; }
+.pinout { width: 100%; background: var(--thumb-bg); border-radius: 8px; cursor: zoom-in; display: block; }
+.pinout.zoom { width: auto; max-width: none; cursor: zoom-out; }
+.zoom-box { overflow: auto; border-radius: 8px; }
+.note { white-space: pre-wrap; margin: 0; overflow-wrap: anywhere; }
+dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 0; }
+dt { color: var(--muted); }
+dd { margin: 0; overflow-wrap: anywhere; }
+.foto { width: 100%; border-radius: 8px; }
+.azioni { display: flex; flex-wrap: wrap; gap: 8px; }
+.azioni a {
+  display: inline-block; padding: 8px 14px; border-radius: 8px; text-decoration: none; font-weight: 600;
+  background: var(--accent); color: var(--accent-text);
+}
+.azioni a.secondario { background: var(--thumb-bg); color: var(--text); border: 1px solid var(--border); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Archivio componenti</h1>
+  <p id="conteggio"></p>
+  <div class="controlli">
+    <input id="cerca" type="search" placeholder="Cerca nome, modello, tag, note…" aria-label="Cerca">
+    <select id="f-categoria" aria-label="Categoria"><option value="">Tutte le categorie</option></select>
+    <select id="f-stato" aria-label="Stato"><option value="">Tutti gli stati</option></select>
+    <select id="f-interfaccia" aria-label="Interfaccia"><option value="">Tutte le interfacce</option></select>
+  </div>
+</header>
+<main>
+  <ul id="lista"></ul>
+  <p id="vuoto" class="vuoto" hidden></p>
+</main>
+<dialog id="dettaglio" aria-labelledby="dlg-titolo">
+  <div class="dlg-testa">
+    <h2 id="dlg-titolo"></h2>
+    <button class="chiudi" type="button" id="chiudi">Chiudi</button>
+  </div>
+  <div class="dlg-corpo" id="dlg-corpo"></div>
+</dialog>
+<script id="dati" type="application/json">/*__DATI__*/</script>
+<script>
+"use strict";
+const DATI = JSON.parse(document.getElementById("dati").textContent);
+const ETICHETTE_STATO = { confermato: "confermato", ipotesi: "ipotesi", da_identificare: "da identificare" };
+
+// Crea un elemento DOM. I testi passano SEMPRE da textContent (mai come HTML grezzo),
+// così il contenuto di una scheda non può mai essere interpretato come HTML.
+function el(tag, attributi, ...figli) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attributi || {})) {
+    if (v === null || v === undefined || v === false) continue;
+    if (k === "testo") n.textContent = v; else n.setAttribute(k, v);
+  }
+  for (const f of figli) if (f) n.append(f);
+  return n;
+}
+
+// Toglie accenti e maiuscole: "Relè" e "rele" diventano uguali.
+// NFD separa la lettera dal suo accento, poi l'accento viene eliminato.
+const normalizza = (s) => (s || "").normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+
+const indiceRicerca = new Map(DATI.map((c) => [c.id, normalizza([
+  c.id, c.nome, c.modello, c.produttore, c.categoria, c.tensione, c.posizione, c.note,
+  ...c.tag, ...c.interfacce, ...c.progetti,
+].join(" "))]));
+
+const cerca = document.getElementById("cerca");
+const fCat = document.getElementById("f-categoria");
+const fStato = document.getElementById("f-stato");
+const fInt = document.getElementById("f-interfaccia");
+const lista = document.getElementById("lista");
+const vuoto = document.getElementById("vuoto");
+const conteggio = document.getElementById("conteggio");
+
+function riempi(select, valori, etichetta) {
+  for (const v of [...new Set(valori)].sort((a, b) => a.localeCompare(b, "it"))) {
+    select.append(el("option", { value: v, testo: etichetta ? etichetta(v) : v }));
+  }
+}
+riempi(fCat, DATI.map((c) => c.categoria));
+riempi(fStato, DATI.map((c) => c.stato), (s) => ETICHETTE_STATO[s] || s);
+riempi(fInt, DATI.flatMap((c) => c.interfacce));
+
+function badge(stato) {
+  return stato === "confermato" ? null : el("span", { class: "badge " + stato, testo: ETICHETTE_STATO[stato] });
+}
+
+function scheda(c) {
+  const anteprima = c.pinout
+    ? el("img", { class: "anteprima", src: c.pinout, alt: "Pinout " + c.nome, loading: "lazy" })
+    : el("div", { class: "anteprima", testo: "nessun pinout" });
+  const meta = [c.categoria, "q.tà " + c.quantita, c.interfacce.join(", ")].filter(Boolean).join(" · ");
+  const btn = el("button", { class: "scheda", type: "button", "data-id": c.id },
+    anteprima,
+    el("div", { class: "corpo" },
+      el("p", { class: "nome", testo: c.nome }),
+      el("p", { class: "meta", testo: meta }),
+      badge(c.stato)));
+  btn.addEventListener("click", () => apri(c));
+  return el("li", null, btn);
+}
+
+function aggiorna() {
+  const q = normalizza(cerca.value).split(/\s+/).filter(Boolean);
+  const visibili = DATI.filter((c) =>
+    (!fCat.value || c.categoria === fCat.value) &&
+    (!fStato.value || c.stato === fStato.value) &&
+    (!fInt.value || c.interfacce.includes(fInt.value)) &&
+    // Ogni parola cercata deve comparire da qualche parte (ricerca "AND").
+    q.every((parola) => indiceRicerca.get(c.id).includes(parola)));
+  lista.replaceChildren(...visibili.map(scheda));
+  const pezzi = DATI.reduce((t, c) => t + c.quantita, 0);
+  conteggio.textContent = `${visibili.length} di ${DATI.length} componenti · ${pezzi} pezzi in totale`;
+  vuoto.hidden = visibili.length > 0;
+  vuoto.textContent = DATI.length === 0 ? "Nessun componente in archivio." : "Nessun risultato.";
+}
+
+const dialog = document.getElementById("dettaglio");
+document.getElementById("chiudi").addEventListener("click", () => dialog.close());
+dialog.addEventListener("click", (e) => { if (e.target === dialog) dialog.close(); });
+
+const urlSicuro = (u) => /^https?:\/\//i.test(u || "") ? u : null;
+
+function apri(c) {
+  document.getElementById("dlg-titolo").textContent = c.nome;
+  const corpo = document.getElementById("dlg-corpo");
+  const parti = [];
+
+  // Ordine deciso nella spec: pinout → note → dati tecnici → quantità/posizione → foto → datasheet.
+  if (c.pinout) {
+    const img = el("img", { class: "pinout", src: c.pinout, alt: "Pinout " + c.nome });
+    img.addEventListener("click", () => img.classList.toggle("zoom"));
+    parti.push(el("div", { class: "zoom-box" }, img));
+  }
+  const b = badge(c.stato);
+  if (b) parti.push(el("p", null, b));
+  if (c.note) parti.push(el("h3", { testo: "Note" }), el("p", { class: "note", testo: c.note }));
+
+  const righe = [
+    ["Categoria", c.categoria], ["Produttore", c.produttore], ["Modello", c.modello],
+    ["Tensione", c.tensione], ["Interfacce", c.interfacce.join(", ")], ["Tag", c.tag.join(", ")],
+  ];
+  const dl = el("dl");
+  for (const [k, v] of righe) if (v) dl.append(el("dt", { testo: k }), el("dd", { testo: v }));
+  parti.push(el("h3", { testo: "Dati tecnici" }), dl);
+
+  const dl2 = el("dl");
+  dl2.append(el("dt", { testo: "Quantità" }), el("dd", { testo: String(c.quantita) }));
+  if (c.posizione) dl2.append(el("dt", { testo: "Posizione" }), el("dd", { testo: c.posizione }));
+  if (c.progetti.length) dl2.append(el("dt", { testo: "Progetti" }), el("dd", { testo: c.progetti.join(", ") }));
+  parti.push(el("h3", { testo: "Magazzino" }), dl2);
+
+  if (c.foto) parti.push(el("h3", { testo: "Foto" }), el("img", { class: "foto", src: c.foto, alt: "Foto " + c.nome }));
+
+  const query = [c.produttore, c.modello || c.nome, "datasheet pdf"].filter(Boolean).join(" ");
+  const azioni = el("div", { class: "azioni" });
+  const ds = urlSicuro(c.datasheet_url);
+  if (ds) azioni.append(el("a", { href: ds, target: "_blank", rel: "noopener", testo: "Datasheet" }));
+  azioni.append(el("a", {
+    class: ds ? "secondario" : null, target: "_blank", rel: "noopener",
+    href: "https://duckduckgo.com/?q=" + encodeURIComponent(query), testo: "Cerca datasheet aggiornato",
+  }));
+  parti.push(el("h3", { testo: "Datasheet" }), azioni);
+
+  corpo.replaceChildren(...parti);
+  corpo.scrollTop = 0;
+  dialog.showModal();
+}
+
+for (const n of [cerca, fCat, fStato, fInt]) n.addEventListener("input", aggiorna);
+aggiorna();
+
+// Il service worker (copia offline sul telefono) funziona solo via http/https:
+// aprendo il file dal disco (file://) lo saltiamo, e la pagina funziona lo stesso.
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
+</script>
+</body>
+</html>
