@@ -1,22 +1,57 @@
 """Generazione della pagina del catalogo, del manifest PWA e del service worker."""
 
+import io
 import json
 from dataclasses import asdict
 from pathlib import Path
+
+from PIL import Image, ImageDraw
 
 from .modello import Componente
 
 TEMPLATE = Path(__file__).with_name("template.html")
 SEGNAPOSTO = "/*__DATI__*/"
 
-ICONA_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-<rect width="64" height="64" rx="12" fill="#1f6f5c"/>
-<rect x="18" y="18" width="28" height="28" rx="3" fill="#e8f3ef"/>
-<g stroke="#e8f3ef" stroke-width="3" stroke-linecap="round">
-<path d="M24 10v8M32 10v8M40 10v8M24 46v8M32 46v8M40 46v8M10 24h8M10 32h8M10 40h8M46 24h8M46 32h8M46 40h8"/>
+ICONA_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<rect width="100" height="100" rx="22" fill="#1e5c45"/>
+<g fill="#e7f2ec">
+<path d="M32.8 20h4.4v10h-4.4zM42.8 20h4.4v10h-4.4zM52.8 20h4.4v10h-4.4zM62.8 20h4.4v10h-4.4zM32.8 70h4.4v10h-4.4zM42.8 70h4.4v10h-4.4zM52.8 70h4.4v10h-4.4zM62.8 70h4.4v10h-4.4zM20 32.8h10v4.4H20zM20 42.8h10v4.4H20zM20 52.8h10v4.4H20zM20 62.8h10v4.4H20zM70 32.8h10v4.4H70zM70 42.8h10v4.4H70zM70 52.8h10v4.4H70zM70 62.8h10v4.4H70z"/>
+<rect x="27" y="27" width="46" height="46" rx="5"/>
 </g>
+<circle cx="36.5" cy="36.5" r="3.5" fill="#1e5c45"/>
 </svg>
 """
+
+
+LATI_ICONA = (180, 192, 512)
+
+
+def genera_icona_png(lato: int) -> bytes:
+    """Icona per la schermata Home: chip con piedini su fondo verde serigrafia.
+
+    Quadrata, opaca e a tutto campo: iOS e Android applicano da soli la maschera
+    arrotondata (e iOS riempirebbe di nero le parti trasparenti). Il disegno sta
+    nel 60% centrale, così resta intero anche con le maschere "maskable".
+    Disegnata 4 volte più grande e poi ridotta, per avere bordi morbidi.
+    """
+    s = lato * 4
+    im = Image.new("RGB", (s, s), (30, 92, 69))
+    d = ImageDraw.Draw(im)
+    u = s / 100  # unità: percentuale del lato
+    chiaro, scuro = (231, 242, 236), (30, 92, 69)
+    for i in range(4):
+        c = 35 + i * 10
+        for x0, y0, x1, y1 in (
+            (c - 2.2, 20, c + 2.2, 30), (c - 2.2, 70, c + 2.2, 80),
+            (20, c - 2.2, 30, c + 2.2), (70, c - 2.2, 80, c + 2.2),
+        ):
+            d.rounded_rectangle([x0 * u, y0 * u, x1 * u, y1 * u], radius=1.2 * u, fill=chiaro)
+    d.rounded_rectangle([27 * u, 27 * u, 73 * u, 73 * u], radius=5 * u, fill=chiaro)
+    d.ellipse([33 * u, 33 * u, 40 * u, 40 * u], fill=scuro)  # pallino del pin 1
+    im = im.resize((lato, lato), Image.Resampling.LANCZOS)
+    buf = io.BytesIO()
+    im.save(buf, format="PNG", optimize=True)
+    return buf.getvalue()
 
 
 def dati_componente(c: Componente, pinout: str | None, foto: str | None) -> dict:
@@ -108,6 +143,10 @@ def genera_manifest() -> str:
         "display": "standalone",
         "background_color": "#f2f2f7",
         "theme_color": "#f2f2f7",
-        "icons": [{"src": "icona.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any"}],
+        "icons": [
+            {"src": "icona-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+            {"src": "icona-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"},
+            {"src": "icona.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any"},
+        ],
     }
     return json.dumps(manifest, ensure_ascii=False, indent=2) + "\n"

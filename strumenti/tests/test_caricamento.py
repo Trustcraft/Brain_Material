@@ -89,3 +89,15 @@ def test_file_non_utf8(tmp_path):
     (cartella / "scheda.yaml").write_bytes("nome: Relè\n".encode("cp1252"))
     with pytest.raises(ErroreScheda, match="componenti/x/scheda.yaml: .*UTF-8"):
         carica_componenti(tmp_path)
+
+
+@pytest.mark.parametrize("valore", [[{"a": "b"}], [["I2C"]], [None]])
+def test_elementi_lista_devono_essere_testi(crea_scheda, valore):
+    radice = crea_scheda("x", interfacce=valore)
+    with pytest.raises(ErroreScheda, match="'interfacce' deve contenere solo testi"):
+        carica_componenti(radice)
+
+
+def test_numeri_in_lista_diventano_testo(crea_scheda):
+    radice = crea_scheda("x", tag=[2024, "ok"])
+    assert carica_componenti(radice)[0].tag == ("2024", "ok")

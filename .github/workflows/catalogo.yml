@@ -16,8 +16,8 @@ permissions:
 
 jobs:
   genera-e-pubblica:
-    # Il commit "chore: rigenera catalogo" fatto da questa Action non deve
-    # farne partire un'altra (altrimenti si innescherebbe un ciclo infinito).
+    # I push fatti con il GITHUB_TOKEN non avviano altre Action, quindi il commit
+    # "chore: rigenera catalogo" non crea cicli. Questo controllo è una sicurezza in più.
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
@@ -45,6 +45,8 @@ jobs:
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add catalogo INVENTARIO.md
             git commit -m "chore: rigenera catalogo"
+            # Se nel frattempo è arrivato un altro push, lo integra invece di fallire.
+            git pull --rebase
             git push
           fi
 
@@ -54,8 +56,9 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
-          if [ -z "$VERCEL_TOKEN" ]; then
-            echo "::warning::Secret VERCEL_TOKEN mancante: catalogo generato ma non pubblicato."
+          # Servono tutti e tre: senza ORG/PROJECT la CLI creerebbe un progetto nuovo.
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "::warning::Secret Vercel mancanti (servono VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID): catalogo generato ma non pubblicato."
             exit 0
           fi
           npx --yes vercel@50.38.0 deploy catalogo --prod --yes --token "$VERCEL_TOKEN"

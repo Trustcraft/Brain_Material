@@ -53,3 +53,13 @@ rigenera il catalogo e lo pubblica. Per collegarla a Vercel:
 
 Senza i secret l'Action genera comunque il catalogo, ma non lo pubblica.
 Il sito non ha password: non scrivere dati sensibili nelle schede.
+
+## Test
+
+```bash
+python -m pytest -m "not browser" -q          # veloci, gli stessi della GitHub Action
+pip install playwright && python -m playwright install chromium
+python -m pytest -m browser -q                # verifica la pagina in un browser vero
+```
+
+Se Chromium è già installato altrove, indica il percorso con `CHROMIUM_PATH=/percorso/chromium`.

@@ -13,7 +13,15 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from archivio.caricamento import carica_componenti  # noqa: E402
-from archivio.catalogo import ICONA_SVG, dati_componente, genera_html, genera_manifest, genera_sw  # noqa: E402
+from archivio.catalogo import (  # noqa: E402
+    ICONA_SVG,
+    LATI_ICONA,
+    dati_componente,
+    genera_html,
+    genera_icona_png,
+    genera_manifest,
+    genera_sw,
+)
 from archivio.immagini import esporta_immagine, trova_immagine  # noqa: E402
 from archivio.inventario import genera_inventario  # noqa: E402
 from archivio.modello import ErroreScheda  # noqa: E402
@@ -29,7 +37,7 @@ def scrivi(percorso: Path, testo: str) -> None:
     percorso.write_text(testo, encoding="utf-8", newline="\n")
 
 
-def costruisci(radice: Path, uscita: Path) -> int:
+def costruisci(radice: Path, uscita: Path, inventario: Path) -> int:
     """Genera il catalogo completo in `uscita`. Solleva ErroreScheda se qualcosa non va."""
     componenti = carica_componenti(radice)
     dati = []
@@ -46,6 +54,8 @@ def costruisci(radice: Path, uscita: Path) -> int:
     scrivi(uscita / "index.html", genera_html(dati))
     scrivi(uscita / "manifest.webmanifest", genera_manifest())
     scrivi(uscita / "icona.svg", ICONA_SVG)
+    for lato in LATI_ICONA:
+        (uscita / f"icona-{lato}.png").write_bytes(genera_icona_png(lato))
 
     # La versione della cache offline è l'hash di tutto il contenuto: cambia
     # solo quando cambia davvero qualcosa, e allora il telefono scarica la nuova copia.
@@ -55,7 +65,7 @@ def costruisci(radice: Path, uscita: Path) -> int:
         h.update(nome.encode())
         h.update((uscita / nome).read_bytes())
     scrivi(uscita / "sw.js", genera_sw(file, h.hexdigest()[:12]))
-    scrivi(radice / "INVENTARIO.md.nuovo", genera_inventario(componenti))
+    scrivi(inventario, genera_inventario(componenti))
     return len(componenti)
 
 
@@ -70,11 +80,11 @@ def main(argv: list[str] | None = None) -> int:
     # se una scheda o un'immagine è sbagliata, il catalogo precedente resta intatto
     # e la copia offline non va mai persa.
     with tempfile.TemporaryDirectory(dir=radice, prefix=".catalogo-") as tmp:
-        uscita = Path(tmp) / "catalogo"
+        tmp = Path(tmp)
+        uscita, inventario = tmp / "catalogo", tmp / "INVENTARIO.md"
         try:
-            n = costruisci(radice, uscita)
+            n = costruisci(radice, uscita, inventario)
         except ErroreScheda as e:
-            (radice / "INVENTARIO.md.nuovo").unlink(missing_ok=True)
             print(f"ERRORE: {e}", file=sys.stderr)
             return 1
         # Copiati dopo il calcolo della versione: non entrano nella cache offline.
@@ -83,10 +93,20 @@ def main(argv: list[str] | None = None) -> int:
                 shutil.copytree(catalogo / nome, uscita / nome)
             elif (catalogo / nome).is_file():
                 shutil.copy2(catalogo / nome, uscita / nome)
+        # Scambio con due spostamenti (rename, istantanei sullo stesso disco) invece di
+        # cancellare e poi copiare: se qualcosa va storto a metà, il vecchio catalogo
+        # viene rimesso al suo posto. Il vecchio finisce nella cartella temporanea,
+        # che viene eliminata automaticamente all'uscita dal blocco "with".
+        vecchio = tmp / "vecchio"
         if catalogo.exists():
-            shutil.rmtree(catalogo)
-        shutil.move(str(uscita), catalogo)
-        (radice / "INVENTARIO.md.nuovo").replace(radice / "INVENTARIO.md")
+            catalogo.rename(vecchio)
+        try:
+            uscita.rename(catalogo)
+        except OSError:
+            if vecchio.exists():
+                vecchio.rename(catalogo)
+            raise
+        inventario.replace(radice / "INVENTARIO.md")
 
     print(f"Catalogo generato: {n} componenti")
     return 0

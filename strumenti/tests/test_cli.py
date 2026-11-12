@@ -85,3 +85,53 @@ def test_preserva_cartella_vercel(crea_scheda):
     assert link.read_text() == '{"orgId":"o","projectId":"p"}'
     # e non deve entrare nella cache offline né cambiarne la versione
     assert ".vercel" not in (radice / "catalogo" / "sw.js").read_text()
+
+
+def test_icone_png_per_installazione(crea_scheda):
+    # iOS ignora le apple-touch-icon in SVG; Android vuole PNG 192 e 512.
+    import json
+    radice = con_pinout(crea_scheda)
+    assert main(["--radice", str(radice)]) == 0
+    cat = radice / "catalogo"
+    for lato in (180, 192, 512):
+        with Image.open(cat / f"icona-{lato}.png") as im:
+            assert im.size == (lato, lato) and im.format == "PNG"
+            assert im.mode == "RGB"  # iOS riempie di nero la trasparenza
+    html = (cat / "index.html").read_text(encoding="utf-8")
+    assert 'rel="apple-touch-icon" href="icona-180.png"' in html
+    manifest = json.loads((cat / "manifest.webmanifest").read_text())
+    sizes = {i["sizes"] for i in manifest["icons"] if i["type"] == "image/png"}
+    assert {"192x192", "512x512"} <= sizes
+    assert "icona-512.png" in (cat / "sw.js").read_text()
+
+
+def test_nessun_file_temporaneo_rimasto(crea_scheda):
+    radice = con_pinout(crea_scheda)
+    assert main(["--radice", str(radice)]) == 0
+    crea_scheda("rotto", stato="ok")
+    assert main(["--radice", str(radice)]) == 1
+    rimasti = [p.name for p in radice.iterdir() if p.name.startswith(".catalogo-") or p.name.endswith(".nuovo")]
+    assert rimasti == []
+
+
+def test_scambio_fallito_ripristina_vecchio_catalogo(crea_scheda, monkeypatch):
+    import pathlib
+
+    import pytest
+
+    radice = con_pinout(crea_scheda)
+    assert main(["--radice", str(radice)]) == 0
+    prima = hash_albero(radice / "catalogo")
+    originale = pathlib.Path.rename
+
+    def rename_difettoso(self, dest):
+        # Simula un errore (es. file bloccato su Windows) solo spostando il NUOVO catalogo.
+        if self.name == "catalogo" and self.parent.name.startswith(".catalogo-"):
+            raise OSError("bloccato")
+        return originale(self, dest)
+
+    monkeypatch.setattr(pathlib.Path, "rename", rename_difettoso)
+    with pytest.raises(OSError):
+        main(["--radice", str(radice)])
+    monkeypatch.undo()
+    assert hash_albero(radice / "catalogo") == prima

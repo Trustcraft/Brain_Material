@@ -6,12 +6,13 @@
 <title>Componenti</title>
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Componenti">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icona.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icona.svg">
+<link rel="apple-touch-icon" href="icona-180.png">
 <style>
 /* ── Token ──────────────────────────────────────────────────────────────
    Colori semantici come su iOS: ogni colore ha UN significato.
@@ -382,7 +383,7 @@ function chipDisegnato(c) {
 // NFD separa la lettera dal suo accento, poi l'accento viene eliminato.
 const normalizza = (s) => (s || "").normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
 const indiceRicerca = new Map(DATI.map((c) => [c.id, normalizza([
-  c.id, c.nome, c.modello, c.produttore, c.categoria, c.tensione, c.posizione, c.note,
+  c.id, c.nome, c.modello, c.produttore, c.categoria, NOMI_CATEGORIA[c.categoria], c.tensione, c.posizione, c.note,
   ...c.tag, ...c.interfacce, ...c.progetti,
 ].join(" "))]));
 

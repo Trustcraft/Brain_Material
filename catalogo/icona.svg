@@ -1,7 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-<rect width="64" height="64" rx="12" fill="#1f6f5c"/>
-<rect x="18" y="18" width="28" height="28" rx="3" fill="#e8f3ef"/>
-<g stroke="#e8f3ef" stroke-width="3" stroke-linecap="round">
-<path d="M24 10v8M32 10v8M40 10v8M24 46v8M32 46v8M40 46v8M10 24h8M10 32h8M10 40h8M46 24h8M46 32h8M46 40h8"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<rect width="100" height="100" rx="22" fill="#1e5c45"/>
+<g fill="#e7f2ec">
+<path d="M32.8 20h4.4v10h-4.4zM42.8 20h4.4v10h-4.4zM52.8 20h4.4v10h-4.4zM62.8 20h4.4v10h-4.4zM32.8 70h4.4v10h-4.4zM42.8 70h4.4v10h-4.4zM52.8 70h4.4v10h-4.4zM62.8 70h4.4v10h-4.4zM20 32.8h10v4.4H20zM20 42.8h10v4.4H20zM20 52.8h10v4.4H20zM20 62.8h10v4.4H20zM70 32.8h10v4.4H70zM70 42.8h10v4.4H70zM70 52.8h10v4.4H70zM70 62.8h10v4.4H70z"/>
+<rect x="27" y="27" width="46" height="46" rx="5"/>
 </g>
+<circle cx="36.5" cy="36.5" r="3.5" fill="#1e5c45"/>
 </svg>

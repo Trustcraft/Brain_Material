@@ -1,5 +1,5 @@
-const CACHE = "archivio-7038b79707c6";
-const FILE = ["./", "icona.svg", "index.html", "manifest.webmanifest"];
+const CACHE = "archivio-968efce971d6";
+const FILE = ["./", "icona-180.png", "icona-192.png", "icona-512.png", "icona.svg", "index.html", "manifest.webmanifest"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILE)).then(() => self.skipWaiting()));

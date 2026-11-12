@@ -89,6 +89,9 @@ def _carica(cartella: Path, radice: Path) -> Componente:
             v = []
         if not isinstance(v, list):
             raise errore(f"'{campo}' deve essere una lista, es. [I2C, SPI]")
+        # bool escluso: "yes"/"no" in YAML diventano True/False, quasi sempre per errore.
+        if any(isinstance(x, bool) or not isinstance(x, (str, int, float)) for x in v):
+            raise errore(f"'{campo}' deve contenere solo testi, es. [I2C, SPI]")
         liste[campo] = tuple(str(x) for x in v)
 
     return Componente(

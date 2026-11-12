@@ -170,3 +170,10 @@ def test_sigla_chip_senza_pinout(catalogo, pagina):
     page.goto((catalogo / "index.html").as_uri())
     # "Modulo relè 5V": nessun modello; "5V" ha lettere e cifre ma è troppo corta → prima parola.
     assert page.locator('.scheda[data-id="rele-5v"] .ic text').text_content() == "MODULO"
+
+
+def test_ricerca_per_nome_categoria(catalogo, pagina):
+    page = pagina.new_page()
+    page.goto((catalogo / "index.html").as_uri())
+    page.fill("#cerca", "attuatori")  # nome plurale mostrato nei filtri
+    assert visibili(page) == 1
