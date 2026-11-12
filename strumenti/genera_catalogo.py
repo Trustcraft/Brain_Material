@@ -18,8 +18,9 @@ from archivio.immagini import esporta_immagine, trova_immagine  # noqa: E402
 from archivio.inventario import genera_inventario  # noqa: E402
 from archivio.modello import ErroreScheda  # noqa: E402
 
-# File di configurazione che stanno in catalogo/ ma non sono generati: vanno conservati.
-CONSERVA = ("vercel.json",)
+# File e cartelle che stanno in catalogo/ ma non sono generati: vanno conservati.
+# .vercel/ viene creata da `vercel link` e contiene il collegamento al progetto.
+CONSERVA = ("vercel.json", ".vercel")
 
 
 def scrivi(percorso: Path, testo: str) -> None:
@@ -76,8 +77,11 @@ def main(argv: list[str] | None = None) -> int:
             (radice / "INVENTARIO.md.nuovo").unlink(missing_ok=True)
             print(f"ERRORE: {e}", file=sys.stderr)
             return 1
+        # Copiati dopo il calcolo della versione: non entrano nella cache offline.
         for nome in CONSERVA:
-            if (catalogo / nome).is_file():
+            if (catalogo / nome).is_dir():
+                shutil.copytree(catalogo / nome, uscita / nome)
+            elif (catalogo / nome).is_file():
                 shutil.copy2(catalogo / nome, uscita / nome)
         if catalogo.exists():
             shutil.rmtree(catalogo)

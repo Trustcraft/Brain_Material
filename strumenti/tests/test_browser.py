@@ -106,3 +106,37 @@ def test_offline_con_service_worker(catalogo, pagina):
         assert page.locator("#lista img.anteprima").first.evaluate("i => i.complete && i.naturalWidth > 0")
     finally:
         server.shutdown()
+
+
+def test_rete_lenta_usa_la_copia_salvata(catalogo, pagina):
+    # Segnale debole (es. in negozio): la rete risponde ma lentissima.
+    # La pagina deve comparire dalla copia offline entro pochi secondi.
+    import time
+
+    ritardo = {"s": 0}
+
+    class Lento(http.server.SimpleHTTPRequestHandler):
+        def __init__(self, *a, **k):
+            super().__init__(*a, directory=str(catalogo), **k)
+
+        def do_GET(self):
+            time.sleep(ritardo["s"])
+            super().do_GET()
+
+        def log_message(self, *a):
+            pass
+
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Lento)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        page = pagina.new_context().new_page()
+        page.goto(f"http://127.0.0.1:{server.server_port}/")
+        page.wait_for_function("navigator.serviceWorker.controller !== null", timeout=10000)
+        ritardo["s"] = 15
+        inizio = time.monotonic()
+        page.reload(timeout=30000)
+        assert time.monotonic() - inizio < 8
+        assert visibili(page) == 3
+    finally:
+        ritardo["s"] = 0
+        server.shutdown()

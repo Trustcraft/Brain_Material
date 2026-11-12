@@ -81,3 +81,11 @@ def test_cartella_senza_scheda(tmp_path):
     (tmp_path / "componenti" / "x").mkdir(parents=True)
     with pytest.raises(ErroreScheda, match="componenti/x/scheda.yaml: file mancante"):
         carica_componenti(tmp_path)
+
+
+def test_file_non_utf8(tmp_path):
+    cartella = tmp_path / "componenti" / "x"
+    cartella.mkdir(parents=True)
+    (cartella / "scheda.yaml").write_bytes("nome: Relè\n".encode("cp1252"))
+    with pytest.raises(ErroreScheda, match="componenti/x/scheda.yaml: .*UTF-8"):
+        carica_componenti(tmp_path)

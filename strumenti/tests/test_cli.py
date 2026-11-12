@@ -73,3 +73,15 @@ def test_preserva_vercel_json(crea_scheda):
     (radice / "catalogo" / "vercel.json").write_text("{}")
     main(["--radice", str(radice)])
     assert (radice / "catalogo" / "vercel.json").read_text() == "{}"
+
+
+def test_preserva_cartella_vercel(crea_scheda):
+    # `vercel link --cwd catalogo` crea catalogo/.vercel/: non va cancellata.
+    radice = con_pinout(crea_scheda)
+    link = radice / "catalogo" / ".vercel" / "project.json"
+    link.parent.mkdir(parents=True)
+    link.write_text('{"orgId":"o","projectId":"p"}')
+    assert main(["--radice", str(radice)]) == 0
+    assert link.read_text() == '{"orgId":"o","projectId":"p"}'
+    # e non deve entrare nella cache offline né cambiarne la versione
+    assert ".vercel" not in (radice / "catalogo" / "sw.js").read_text()

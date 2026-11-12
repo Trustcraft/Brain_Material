@@ -39,6 +39,8 @@ def _carica(cartella: Path, radice: Path) -> Componente:
         # safe_load costruisce solo tipi semplici (dict, list, str, int...):
         # un file YAML non può mai far eseguire codice.
         dati = yaml.safe_load(file.read_text(encoding="utf-8"))
+    except UnicodeDecodeError as e:
+        raise errore("il file deve essere salvato in UTF-8 (contiene caratteri in un'altra codifica)") from e
     except yaml.YAMLError as e:
         riga = getattr(getattr(e, "problem_mark", None), "line", None)
         dove = f" (riga {riga + 1})" if riga is not None else ""
