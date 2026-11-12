@@ -2,126 +2,347 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Archivio componenti</title>
-<meta name="theme-color" content="#1f6f5c">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Componenti</title>
+<meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Componenti">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icona.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icona.svg">
 <style>
+/* ── Token ──────────────────────────────────────────────────────────────
+   Colori semantici come su iOS: ogni colore ha UN significato.
+   blu = interattivo · verde serigrafia = dati tecnici · arancio/rosso = stato non verificato.
+   Contrasti (testo su superficie): label 16.8:1 · secondario 5.1:1 · blu 5.6:1 ·
+   serigrafia 6.9:1 · ipotesi 5.5:1 · da identificare 5.2:1 (scuro: tutti ≥ 6.5:1). */
 :root {
-  --bg: #f6f7f5; --surface: #ffffff; --text: #1c2321; --muted: #5f6b67;
-  --border: #dde2df; --accent: #1f6f5c; --accent-text: #ffffff;
-  --warn-bg: #fff1c2; --warn-text: #6b4e00; --err-bg: #ffd9d6; --err-text: #8a1c14;
-  --thumb-bg: #eef1ef;
+  color-scheme: light dark;
+  --bg: #f2f2f7;            /* systemGroupedBackground */
+  --surface: #ffffff;       /* secondarySystemGroupedBackground */
+  --surface-2: #f2f2f7;
+  --fill: rgb(118 118 128 / .12);
+  --label: #1d1d1f;
+  --label-2: #6c6c70;
+  --separator: rgb(60 60 67 / .18);
+  --tint: #0066cc;
+  --on-tint: #ffffff;
+  --silk: #1e5c45;          /* verde serigrafia PCB */
+  --silk-bg: #e7f2ec;
+  --warn: #9a4d00;  --warn-bg: #fff2e0;
+  --err: #c4141a;   --err-bg: #ffe9e8;
+  --chip: #2b2b2e;  --chip-ink: #e9e9ea; --pin: #b8b8bd;
+  --bar: rgb(242 242 247 / .78);
+  --shadow: 0 1px 2px rgb(0 0 0 / .06), 0 4px 16px rgb(0 0 0 / .04);
+  --radius: 14px;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #121615; --surface: #1b2120; --text: #e6ebe9; --muted: #9aa6a2;
-    --border: #2d3634; --accent: #4fbf9f; --accent-text: #0b1a15;
-    --warn-bg: #4a3b0c; --warn-text: #ffe08a; --err-bg: #4f1a16; --err-text: #ffb4ab;
-    --thumb-bg: #232b29;
+    --bg: #000000; --surface: #1c1c1e; --surface-2: #2c2c2e;
+    --fill: rgb(118 118 128 / .24);
+    --label: #f5f5f7; --label-2: #a1a1a6; --separator: rgb(84 84 88 / .6);
+    --tint: #4da3ff; --on-tint: #000000;
+    --silk: #7fd6ae; --silk-bg: #14261e;
+    --warn: #ffb54d; --warn-bg: #3a2a12;
+    --err: #ff8a80;  --err-bg: #3d1a1a;
+    --chip: #0e0e10; --chip-ink: #d8d8dc; --pin: #8e8e93;
+    --bar: rgb(0 0 0 / .72);
+    --shadow: none;
   }
 }
+/* Sheet in modalità scura: colori "elevati" come iOS, così il pannello si stacca dallo sfondo. */
+@media (prefers-color-scheme: dark) {
+  dialog { --bg: #1c1c1e; --surface: #2c2c2e; --surface-2: #3a3a3c; --silk-bg: #183026; }
+}
+@media (prefers-contrast: more) {
+  :root { --label-2: #3a3a3c; --separator: rgb(60 60 67 / .5); }
+  @media (prefers-color-scheme: dark) { :root { --label-2: #d1d1d6; --separator: rgb(140 140 145 / .8); } }
+}
+
+/* Testo: 17 px di base come iOS. Su iPhone/iPad, -apple-system-body segue la dimensione
+   scelta in Impostazioni › Schermo e luminosità › Dimensioni testo (Dynamic Type):
+   tutte le misure sono in rem, quindi l'intera pagina si ridimensiona di conseguenza. */
+html { font-size: 106.25%; -webkit-text-size-adjust: 100%; }
+@supports (font: -apple-system-body) {
+  @media (hover: none) and (pointer: coarse) { html { font: -apple-system-body; } }
+}
 * { box-sizing: border-box; }
-html, body { margin: 0; }
 body {
-  background: var(--bg); color: var(--text);
-  font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  margin: 0; background: var(--bg); color: var(--label);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, system-ui, sans-serif;
+  font-size: 1rem; line-height: 1.35; -webkit-font-smoothing: antialiased;
 }
-header { padding: 16px; max-width: 1200px; margin: 0 auto; }
-h1 { margin: 0 0 4px; font-size: 1.4rem; }
-#conteggio { color: var(--muted); margin: 0 0 12px; font-size: .9rem; }
-.controlli { display: grid; gap: 8px; grid-template-columns: 1fr; }
-@media (min-width: 720px) { .controlli { grid-template-columns: 2fr 1fr 1fr 1fr; } }
-input, select {
-  width: 100%; padding: 10px 12px; font: inherit; color: var(--text);
-  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+button, input, select { font: inherit; color: inherit; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+svg.ico { width: 1.25em; height: 1.25em; flex: none; fill: none; stroke: currentColor; stroke-width: 1.7;
+  stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── Intestazione ───────────────────────────────────────────────────── */
+.titolo {
+  max-width: 1180px; margin: 0 auto;
+  padding: calc(env(safe-area-inset-top) + 1.75rem) max(16px, env(safe-area-inset-right)) .25rem max(16px, env(safe-area-inset-left));
 }
-main { max-width: 1200px; margin: 0 auto; padding: 0 16px 32px; }
+.eyebrow { margin: 0; font: 600 .76rem/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--silk); }
+h1 { margin: .15rem 0 0; font-size: 2rem; font-weight: 700; letter-spacing: -.02em; overflow-wrap: anywhere; hyphens: auto; }
+#conteggio { margin: .2rem 0 0; color: var(--label-2); font-size: .88rem; }
+
+/* Barra di ricerca e filtri: è lo strato funzionale, quindi l'unico traslucido (materials.md). */
+.barra {
+  position: sticky; top: 0; z-index: 5;
+  background: var(--bar); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: .5px solid transparent; transition: border-color .2s;
+}
+.barra.staccata { border-bottom-color: var(--separator); }
+@media (prefers-reduced-transparency: reduce) { .barra { background: var(--bg); backdrop-filter: none; -webkit-backdrop-filter: none; } }
+.barra-in { max-width: 1180px; margin: 0 auto; padding: .6rem max(16px, env(safe-area-inset-right)) .6rem max(16px, env(safe-area-inset-left)); }
+.campo {
+  display: flex; align-items: center; gap: .4rem; min-height: 44px; padding: 0 .7rem;
+  background: var(--fill); border-radius: 12px; color: var(--label-2);
+}
+.campo input { flex: 1; min-width: 0; border: 0; background: none; outline: none; padding: .55rem 0; color: var(--label); font-size: 1rem; }
+.campo input::placeholder { color: var(--label-2); }
+.campo input::-webkit-search-cancel-button { -webkit-appearance: none; }
+.campo:focus-within { box-shadow: 0 0 0 3px color-mix(in srgb, var(--tint) 35%, transparent); }
+#svuota { display: none; border: 0; background: none; color: var(--label-2); padding: 0; width: 44px; height: 44px; margin-right: -.7rem; cursor: pointer; }
+#svuota.vis { display: grid; place-items: center; }
+
+/* Categorie: barra di filtri a scorrimento (scope bar), icona + testo. */
+.categorie {
+  display: flex; gap: .5rem; margin: .6rem -16px 0; padding: 0 16px; overflow-x: auto;
+  scrollbar-width: none; scroll-snap-type: x proximity; overscroll-behavior-x: contain; scroll-padding-inline: 16px;
+}
+.categorie::-webkit-scrollbar { display: none; }
+.cat {
+  flex: none; display: inline-flex; align-items: center; gap: .4rem; min-height: 36px; padding: 0 .85rem;
+  border: 0; border-radius: 999px; background: var(--surface); color: var(--label); cursor: pointer;
+  font-size: .88rem; font-weight: 500; scroll-snap-align: start; box-shadow: var(--shadow);
+  position: relative;
+}
+/* area di tocco 44 px anche se la pillola visibile è alta 36 */
+.cat::after { content: ""; position: absolute; inset: -4px 0; }
+.cat[aria-pressed="true"] { background: var(--label); color: var(--bg); }
+.cat .n { font: 500 .76rem var(--mono); opacity: .65; }
+
+.filtri { display: flex; gap: .5rem; margin-top: .55rem; }
+@media (min-width: 700px) { .filtri { max-width: 34rem; } }
+.menu {
+  position: relative; flex: 1; min-width: 0; display: flex; align-items: center;
+  min-height: 44px; background: var(--surface); border-radius: 12px; box-shadow: var(--shadow);
+}
+.menu select {
+  appearance: none; -webkit-appearance: none; width: 100%; min-height: 44px; border: 0; background: none;
+  padding: 0 2rem 0 .8rem; font-size: .94rem; color: var(--tint); cursor: pointer; text-overflow: ellipsis;
+}
+.menu svg { position: absolute; right: .65rem; pointer-events: none; color: var(--tint); width: 1rem; height: 1rem; }
+
+:focus-visible { outline: 3px solid var(--tint); outline-offset: 2px; }
+
+/* ── Griglia ────────────────────────────────────────────────────────── */
+main { max-width: 1180px; margin: 0 auto; padding: .75rem max(16px, env(safe-area-inset-right)) calc(2rem + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
 #lista {
-  display: grid; gap: 12px; padding: 0; margin: 0; list-style: none;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  list-style: none; margin: 0; padding: 0; display: grid; gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 10rem), 1fr));
 }
+@media (min-width: 700px) { #lista { grid-template-columns: repeat(auto-fill, minmax(13.5rem, 1fr)); gap: 16px; } }
 .scheda {
-  display: flex; flex-direction: column; width: 100%; padding: 0; text-align: left;
-  background: var(--surface); color: inherit; font: inherit; cursor: pointer;
-  border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+  display: flex; flex-direction: column; width: 100%; height: 100%; padding: 0; border: 0; text-align: left;
+  background: var(--surface); border-radius: var(--radius); overflow: hidden; cursor: pointer;
+  box-shadow: var(--shadow); transition: transform .15s ease;
 }
-.scheda:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.anteprima {
-  aspect-ratio: 4 / 3; width: 100%; object-fit: contain; background: var(--thumb-bg);
-  display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: .85rem;
+.scheda:active { transform: scale(.98); }
+@media (hover: hover) { .scheda:hover { box-shadow: 0 2px 4px rgb(0 0 0 / .08), 0 10px 28px rgb(0 0 0 / .08); } }
+.anteprima { position: relative; aspect-ratio: 4 / 3; background: #ffffff; display: grid; place-items: center; overflow: hidden; }
+.anteprima img { width: 100%; height: 100%; object-fit: contain; padding: 6%; }
+@media (prefers-color-scheme: dark) {
+  /* dark-mode.md: "Soften the color of white backgrounds" — i pinout sono quasi sempre su bianco. */
+  .anteprima { background: #e8e8ed; }
+  .anteprima img, .pinout { filter: brightness(.92); }
 }
-.corpo { padding: 10px 12px 12px; }
-.nome { font-weight: 600; margin: 0 0 4px; overflow-wrap: anywhere; }
-.meta { color: var(--muted); font-size: .85rem; margin: 0; }
+.anteprima.vuota { background: var(--surface-2); }
+.corpo { display: flex; flex-direction: column; gap: .3rem; padding: .7rem .8rem .8rem; flex: 1; }
+.riga1 { display: flex; align-items: center; gap: .35rem; color: var(--label-2); font-size: .76rem; font-weight: 500; }
+.riga1 svg.ico { width: 1rem; height: 1rem; }
+.q { margin-left: auto; font: 600 .82rem var(--mono); color: var(--label); }
+.nome { margin: 0; font-size: 1rem; font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
+.silk { display: flex; flex-wrap: wrap; gap: .25rem; margin-top: auto; padding-top: .2rem; }
+.tag {
+  font: 600 .7rem/1 var(--mono); letter-spacing: .04em; text-transform: uppercase;
+  color: var(--silk); background: var(--silk-bg); padding: .3rem .4rem; border-radius: 5px;
+}
 .badge {
-  display: inline-block; font-size: .75rem; font-weight: 600; padding: 2px 8px;
-  border-radius: 999px; margin-top: 6px;
+  align-self: flex-start; display: inline-flex; align-items: center; gap: .3rem;
+  font-size: .76rem; font-weight: 600; padding: .25rem .55rem .25rem .4rem; border-radius: 999px;
 }
-.badge.ipotesi { background: var(--warn-bg); color: var(--warn-text); }
-.badge.da_identificare { background: var(--err-bg); color: var(--err-text); }
-.vuoto { color: var(--muted); text-align: center; padding: 32px 0; }
+.badge svg.ico { width: 1rem; height: 1rem; stroke-width: 2; }
+.badge.ipotesi { color: var(--warn); background: var(--warn-bg); }
+.badge.da_identificare { color: var(--err); background: var(--err-bg); }
+
+/* Chip disegnato per i componenti senza pinout: package DIP con sigla serigrafata. */
+.ic { width: 70%; max-width: 11rem; }
+.ic .corpo-ic { fill: var(--chip); }
+.ic .pin { fill: var(--pin); }
+.ic .tacca { fill: var(--surface-2); }
+.ic text { fill: var(--chip-ink); font: 600 8px var(--mono); letter-spacing: .05em; }
+
+.vuoto { text-align: center; color: var(--label-2); padding: 3.5rem 1rem; }
+.vuoto svg { width: 3rem; height: 3rem; stroke-width: 1.2; margin-bottom: .5rem; }
+.vuoto p { margin: 0; }
+.vuoto strong { display: block; color: var(--label); font-size: 1.15rem; margin-bottom: .25rem; }
+
+/* ── Dettaglio: sheet dal basso su telefono, finestra centrata su schermi larghi ── */
 dialog {
-  width: min(760px, calc(100vw - 16px)); max-height: calc(100dvh - 16px); padding: 0;
-  border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: var(--text);
+  padding: 0; border: 0; color: var(--label); background: var(--bg);
+  width: 100%; max-width: 100%; max-height: calc(100dvh - env(safe-area-inset-top) - 12px);
+  margin: auto 0 0; border-radius: 14px 14px 0 0; overflow: hidden;
 }
-dialog::backdrop { background: rgb(0 0 0 / .55); }
-.dlg-testa {
-  position: sticky; top: 0; display: flex; gap: 8px; align-items: center; justify-content: space-between;
-  padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--border);
+dialog[open] { display: flex; flex-direction: column; animation: su .32s cubic-bezier(.2, .9, .3, 1); }
+dialog::backdrop { background: rgb(0 0 0 / .4); animation: dissolvi .25s ease; }
+@keyframes su { from { transform: translateY(100%); } }
+@keyframes dissolvi { from { opacity: 0; } }
+@media (min-width: 720px) {
+  dialog { width: min(640px, calc(100vw - 48px)); max-height: min(860px, calc(100dvh - 48px)); margin: auto; border-radius: 16px; }
+  dialog[open] { animation: comparsa .22s ease; }
+  @keyframes comparsa { from { opacity: 0; transform: scale(.97); } }
+  .maniglia { display: none; }
 }
-.dlg-testa h2 { margin: 0; font-size: 1.15rem; overflow-wrap: anywhere; }
-.chiudi {
-  flex: none; font: inherit; padding: 6px 12px; border-radius: 8px; cursor: pointer;
-  background: var(--thumb-bg); color: var(--text); border: 1px solid var(--border);
+@media (prefers-reduced-motion: reduce) {
+  dialog[open], dialog::backdrop { animation: none; }
+  .scheda { transition: none; } .scheda:active { transform: none; }
 }
-.dlg-corpo { padding: 16px; }
-.dlg-corpo h3 { font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 20px 0 6px; }
-.pinout { width: 100%; background: var(--thumb-bg); border-radius: 8px; cursor: zoom-in; display: block; }
+.testa {
+  flex: none; position: relative; padding: .5rem 1rem .6rem; background: var(--bg);
+  border-bottom: .5px solid var(--separator); touch-action: none;
+}
+.maniglia { display: block; width: 36px; height: 5px; margin: 0 auto .55rem; border-radius: 3px; background: var(--label-2); opacity: .45; }
+.testa-riga { display: flex; align-items: flex-start; gap: .75rem; }
+.testa-testi { flex: 1; min-width: 0; }
+#dlg-titolo { margin: 0; font-size: 1.25rem; font-weight: 700; letter-spacing: -.01em; overflow-wrap: anywhere; }
+#dlg-sotto:empty { display: none; }
+#dlg-sotto { margin: .15rem 0 0; font: 500 .82rem var(--mono); color: var(--label-2); overflow-wrap: anywhere; }
+#chiudi {
+  flex: none; width: 44px; height: 44px; margin: -.35rem -.5rem 0 0; border: 0; border-radius: 50%;
+  background: none; display: grid; place-items: center; cursor: pointer; color: var(--label-2);
+}
+#chiudi span { width: 30px; height: 30px; border-radius: 50%; background: var(--fill); display: grid; place-items: center; }
+#chiudi svg { width: .95rem; height: .95rem; stroke-width: 2.4; }
+#dlg-corpo { overflow-y: auto; overscroll-behavior: contain; padding: 1rem 1rem calc(1.5rem + env(safe-area-inset-bottom)); }
+.zoom-box { border-radius: 12px; overflow: auto; background: #ffffff; }
+.pinout { display: block; width: 100%; cursor: zoom-in; }
 .pinout.zoom { width: auto; max-width: none; cursor: zoom-out; }
-.zoom-box { overflow: auto; border-radius: 8px; }
-.note { white-space: pre-wrap; margin: 0; overflow-wrap: anywhere; }
-dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 0; }
-dt { color: var(--muted); }
-dd { margin: 0; overflow-wrap: anywhere; }
-.foto { width: 100%; border-radius: 8px; }
-.azioni { display: flex; flex-wrap: wrap; gap: 8px; }
-.azioni a {
-  display: inline-block; padding: 8px 14px; border-radius: 8px; text-decoration: none; font-weight: 600;
-  background: var(--accent); color: var(--accent-text);
+.suggerimento { margin: .35rem .25rem 0; color: var(--label-2); font-size: .76rem; text-align: center; }
+.avviso {
+  display: flex; gap: .6rem; align-items: flex-start; margin-top: 1rem; padding: .75rem .85rem; border-radius: 12px; font-size: .88rem;
 }
-.azioni a.secondario { background: var(--thumb-bg); color: var(--text); border: 1px solid var(--border); }
+.avviso.ipotesi { color: var(--warn); background: var(--warn-bg); }
+.avviso.da_identificare { color: var(--err); background: var(--err-bg); }
+.avviso strong { display: block; }
+#dlg-corpo > .avviso:first-child { margin-top: 0; }
+.sezione { margin: 1.4rem 0 .4rem; padding: 0 .9rem; font-size: .8rem; font-weight: 500; color: var(--label-2); text-transform: uppercase; letter-spacing: .02em; }
+.gruppo { background: var(--surface); border-radius: 12px; overflow: hidden; }
+.note { margin: 0; padding: .8rem .9rem; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.45; }
+.voci { margin: 0; }
+.voce { display: flex; gap: 1rem; justify-content: space-between; align-items: baseline; min-height: 44px; padding: .7rem .9rem; }
+.voce + .voce { box-shadow: inset 0 .5px 0 var(--separator); margin-left: .9rem; padding-left: 0; }
+.voce dt { color: var(--label); flex: none; }
+.voce dd { margin: 0; color: var(--label-2); text-align: right; overflow-wrap: anywhere; }
+.voce dd .silk { justify-content: flex-end; margin: 0; padding: 0; }
+.foto { display: block; width: 100%; }
+.azioni { display: grid; gap: .6rem; margin-top: 1.4rem; }
+.azioni a {
+  display: flex; align-items: center; justify-content: center; gap: .45rem; min-height: 50px; padding: 0 1rem;
+  border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 1rem;
+}
+.azioni .pieno { background: var(--tint); color: var(--on-tint); }
+.azioni .tinto { background: color-mix(in srgb, var(--tint) 14%, transparent); color: var(--tint); }
 </style>
 </head>
 <body>
-<header>
-  <h1>Archivio componenti</h1>
+<header class="titolo">
+  <p class="eyebrow">Inventario elettronica</p>
+  <h1>Componenti</h1>
   <p id="conteggio"></p>
-  <div class="controlli">
-    <input id="cerca" type="search" placeholder="Cerca nome, modello, tag, note…" aria-label="Cerca">
-    <select id="f-categoria" aria-label="Categoria"><option value="">Tutte le categorie</option></select>
-    <select id="f-stato" aria-label="Stato"><option value="">Tutti gli stati</option></select>
-    <select id="f-interfaccia" aria-label="Interfaccia"><option value="">Tutte le interfacce</option></select>
-  </div>
 </header>
+<div class="barra" id="barra">
+  <div class="barra-in">
+    <label class="campo">
+      <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.8-4.8"/></svg>
+      <span class="sr">Cerca</span>
+      <input id="cerca" type="search" placeholder="Nome, sigla, interfaccia, note…" autocomplete="off" enterkeyhint="search">
+      <button id="svuota" type="button" aria-label="Svuota ricerca">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="currentColor" stroke="none" opacity=".35"/><path d="m9 9 6 6m0-6-6 6" stroke="var(--bg)" stroke-width="2"/></svg>
+      </button>
+    </label>
+    <div class="categorie" id="categorie" role="group" aria-label="Categoria"></div>
+    <div class="filtri">
+      <label class="menu"><span class="sr">Stato</span>
+        <select id="f-stato"><option value="">Tutti gli stati</option></select>
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>
+      </label>
+      <label class="menu"><span class="sr">Interfaccia</span>
+        <select id="f-interfaccia"><option value="">Tutte le interfacce</option></select>
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>
+      </label>
+    </div>
+  </div>
+</div>
 <main>
-  <ul id="lista"></ul>
-  <p id="vuoto" class="vuoto" hidden></p>
+  <ul id="lista" aria-label="Componenti"></ul>
+  <div id="vuoto" class="vuoto" hidden></div>
 </main>
 <dialog id="dettaglio" aria-labelledby="dlg-titolo">
-  <div class="dlg-testa">
-    <h2 id="dlg-titolo"></h2>
-    <button class="chiudi" type="button" id="chiudi">Chiudi</button>
+  <div class="testa" id="testa">
+    <div class="maniglia" aria-hidden="true"></div>
+    <div class="testa-riga">
+      <div class="testa-testi">
+        <h2 id="dlg-titolo"></h2>
+        <p id="dlg-sotto"></p>
+      </div>
+      <button id="chiudi" type="button" aria-label="Chiudi"><span>
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+      </span></button>
+    </div>
   </div>
-  <div class="dlg-corpo" id="dlg-corpo"></div>
+  <div id="dlg-corpo"></div>
 </dialog>
 <script id="dati" type="application/json">[]</script>
 <script>
 "use strict";
 const DATI = JSON.parse(document.getElementById("dati").textContent);
-const ETICHETTE_STATO = { confermato: "confermato", ipotesi: "ipotesi", da_identificare: "da identificare" };
+const SVGNS = "http://www.w3.org/2000/svg";
+
+// Icone delle categorie: tracciati SVG disegnati come simboli elettronici.
+const ICONE = {
+  microcontrollore: "M8 8h8v8H8zM10 5v3M14 5v3M10 16v3M14 16v3M5 10h3M5 14h3M16 10h3M16 14h3",
+  sensore: "M12 14a2 2 0 1 0 0-.01M8.5 10.5a5 5 0 0 0 0 7M15.5 10.5a5 5 0 0 1 0 7M6 8a8.5 8.5 0 0 0 0 12M18 8a8.5 8.5 0 0 1 0 12M12 12V4",
+  modulo: "M3 6h18v12H3zM6.5 9.5h.01M17.5 9.5h.01M6.5 14.5h.01M17.5 14.5h.01M10 10h4v4h-4z",
+  attuatore: "M12 12m-6 0a6 6 0 1 0 12 0a6 6 0 1 0-12 0M12 12h.01M12 6V3M18 12h3M12 18v3M6 12H3",
+  display: "M3 5h18v11H3zM8 20h8M12 16v4M6.5 8.5h6",
+  alimentazione: "M4 8h14v8H4zM18 11h2v2h-2M11.5 9.5 9.5 12.5h3l-2 3",
+  passivo: "M2 12h4l1.5-3 3 6 3-6 3 6 1.5-3h4",
+  connettore: "M9 3v5M15 3v5M6.5 8h11v3a5.5 5.5 0 0 1-11 0zM12 16.5V21",
+  altro: "M7 7h.01M12 7h.01M17 7h.01M7 12h.01M12 12h.01M17 12h.01M7 17h.01M12 17h.01M17 17h.01",
+};
+const NOMI_CATEGORIA = {
+  microcontrollore: "Microcontrollori", sensore: "Sensori", modulo: "Moduli", attuatore: "Attuatori",
+  display: "Display", alimentazione: "Alimentazione", passivo: "Passivi", connettore: "Connettori", altro: "Altro",
+};
+const STATI = {
+  confermato: { testo: "Confermato" },
+  ipotesi: { testo: "Ipotesi", spiega: "Identificazione probabile, da verificare prima di usarlo in un progetto.",
+             path: "M12 8.5v4.5M12 16.5h.01M10.3 3.9 2.6 17.3A2 2 0 0 0 4.3 20h15.4a2 2 0 0 0 1.7-2.7L13.7 3.9a2 2 0 0 0-3.4 0z" },
+  da_identificare: { testo: "Da identificare", spiega: "Componente non ancora riconosciuto.",
+             path: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.5 9.2a2.6 2.6 0 0 1 5 .9c0 1.7-2.5 2.3-2.5 3.9M12 17h.01" },
+};
+
+function icona(d, classe) {
+  const s = document.createElementNS(SVGNS, "svg");
+  s.setAttribute("viewBox", "0 0 24 24"); s.setAttribute("class", classe || "ico"); s.setAttribute("aria-hidden", "true");
+  const p = document.createElementNS(SVGNS, "path"); p.setAttribute("d", d); s.append(p);
+  return s;
+}
 
 // Crea un elemento DOM. I testi passano SEMPRE da textContent (mai come HTML grezzo),
 // così il contenuto di una scheda non può mai essere interpretato come HTML.
@@ -135,119 +356,211 @@ function el(tag, attributi, ...figli) {
   return n;
 }
 
+// Chip DIP disegnato, con la sigla "serigrafata" sopra: segnaposto quando manca il pinout.
+function chipDisegnato(c) {
+  const s = document.createElementNS(SVGNS, "svg");
+  s.setAttribute("viewBox", "0 0 120 72"); s.setAttribute("class", "ic"); s.setAttribute("aria-hidden", "true");
+  const add = (tag, attr) => { const n = document.createElementNS(SVGNS, tag); for (const k in attr) n.setAttribute(k, attr[k]); s.append(n); return n; };
+  for (let i = 0; i < 7; i++) {
+    add("rect", { class: "pin", x: 17 + i * 13, y: 2, width: 6, height: 10, rx: 1 });
+    add("rect", { class: "pin", x: 17 + i * 13, y: 60, width: 6, height: 10, rx: 1 });
+  }
+  add("rect", { class: "corpo-ic", x: 8, y: 10, width: 104, height: 52, rx: 4 });
+  add("circle", { class: "tacca", cx: 8, cy: 36, r: 6 });
+  add("circle", { class: "tacca", cx: 20, cy: 52, r: 2.5 });
+  const t = add("text", { x: 62, y: 39, "text-anchor": "middle" });
+  // Sigla: il modello, altrimenti la prima parola del nome con una cifra ("AMS1117-3.3", "DHT22"),
+  // che di solito è il codice stampato sul componente vero.
+  const parole = c.nome.split(/\s+/);
+  const codice = parole.find((p) => p.length >= 3 && /\d/.test(p) && /[a-z]/i.test(p));
+  const sigla = (c.modello || codice || (c.stato === "da_identificare" ? "???" : parole[0])).toUpperCase();
+  t.textContent = sigla.length > 13 ? sigla.slice(0, 12) + "…" : sigla;
+  return s;
+}
+
 // Toglie accenti e maiuscole: "Relè" e "rele" diventano uguali.
 // NFD separa la lettera dal suo accento, poi l'accento viene eliminato.
 const normalizza = (s) => (s || "").normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
-
 const indiceRicerca = new Map(DATI.map((c) => [c.id, normalizza([
   c.id, c.nome, c.modello, c.produttore, c.categoria, c.tensione, c.posizione, c.note,
   ...c.tag, ...c.interfacce, ...c.progetti,
 ].join(" "))]));
 
 const cerca = document.getElementById("cerca");
-const fCat = document.getElementById("f-categoria");
+const svuota = document.getElementById("svuota");
 const fStato = document.getElementById("f-stato");
 const fInt = document.getElementById("f-interfaccia");
+const boxCat = document.getElementById("categorie");
 const lista = document.getElementById("lista");
 const vuoto = document.getElementById("vuoto");
 const conteggio = document.getElementById("conteggio");
+let categoria = "";
 
-function riempi(select, valori, etichetta) {
-  for (const v of [...new Set(valori)].sort((a, b) => a.localeCompare(b, "it"))) {
-    select.append(el("option", { value: v, testo: etichetta ? etichetta(v) : v }));
-  }
+const ordinaIt = (a, b) => a.localeCompare(b, "it");
+for (const s of Object.keys(STATI)) {
+  if (DATI.some((c) => c.stato === s)) fStato.append(el("option", { value: s, testo: STATI[s].testo }));
 }
-riempi(fCat, DATI.map((c) => c.categoria));
-riempi(fStato, DATI.map((c) => c.stato), (s) => ETICHETTE_STATO[s] || s);
-riempi(fInt, DATI.flatMap((c) => c.interfacce));
+for (const v of [...new Set(DATI.flatMap((c) => c.interfacce))].sort(ordinaIt)) fInt.append(el("option", { value: v, testo: v }));
+
+function pulsanteCategoria(valore, etichetta, n, path) {
+  const b = el("button", { type: "button", class: "cat", "aria-pressed": String(valore === categoria), "data-cat": valore },
+    path ? icona(path) : null, el("span", { testo: etichetta }), el("span", { class: "n", testo: String(n) }));
+  b.addEventListener("click", () => {
+    categoria = valore;
+    for (const x of boxCat.children) x.setAttribute("aria-pressed", String(x.dataset.cat === categoria));
+    aggiorna();
+  });
+  return b;
+}
+boxCat.append(pulsanteCategoria("", "Tutti", DATI.length, null));
+for (const k of Object.keys(NOMI_CATEGORIA)) {
+  const n = DATI.filter((c) => c.categoria === k).length;
+  if (n) boxCat.append(pulsanteCategoria(k, NOMI_CATEGORIA[k], n, ICONE[k]));
+}
+if (boxCat.children.length <= 2) boxCat.hidden = true;  // una sola categoria: i filtri non servono
 
 function badge(stato) {
-  return stato === "confermato" ? null : el("span", { class: "badge " + stato, testo: ETICHETTE_STATO[stato] });
+  const s = STATI[stato];
+  return s && s.path ? el("span", { class: "badge " + stato }, icona(s.path), el("span", { testo: s.testo })) : null;
+}
+function etichette(valori) {
+  return valori.length ? el("div", { class: "silk" }, ...valori.map((v) => el("span", { class: "tag", testo: v }))) : null;
 }
 
 function scheda(c) {
   const anteprima = c.pinout
-    ? el("img", { class: "anteprima", src: c.pinout, alt: "Pinout " + c.nome, loading: "lazy" })
-    : el("div", { class: "anteprima", testo: "nessun pinout" });
-  const meta = [c.categoria, "q.tà " + c.quantita, c.interfacce.join(", ")].filter(Boolean).join(" · ");
-  const btn = el("button", { class: "scheda", type: "button", "data-id": c.id },
+    ? el("div", { class: "anteprima" }, el("img", { src: c.pinout, alt: "", loading: "lazy", decoding: "async" }))
+    : el("div", { class: "anteprima vuota" }, chipDisegnato(c));
+  const tecnici = [...c.interfacce.slice(0, 3), c.tensione && c.tensione.length <= 10 ? c.tensione : null].filter(Boolean);
+  const etichettaAcc = [c.nome, NOMI_CATEGORIA[c.categoria], "quantità " + c.quantita, STATI[c.stato].path ? STATI[c.stato].testo : null]
+    .filter(Boolean).join(", ");
+  const btn = el("button", { class: "scheda", type: "button", "data-id": c.id, "aria-label": etichettaAcc },
     anteprima,
     el("div", { class: "corpo" },
+      el("div", { class: "riga1" }, icona(ICONE[c.categoria]), el("span", { testo: NOMI_CATEGORIA[c.categoria] }),
+        el("span", { class: "q", testo: "×" + c.quantita })),
       el("p", { class: "nome", testo: c.nome }),
-      el("p", { class: "meta", testo: meta }),
-      badge(c.stato)));
-  btn.addEventListener("click", () => apri(c));
+      badge(c.stato),
+      etichette(tecnici)));
+  btn.addEventListener("click", () => apri(c, btn));
   return el("li", null, btn);
 }
 
 function aggiorna() {
   const q = normalizza(cerca.value).split(/\s+/).filter(Boolean);
+  svuota.classList.toggle("vis", cerca.value.length > 0);
   const visibili = DATI.filter((c) =>
-    (!fCat.value || c.categoria === fCat.value) &&
+    (!categoria || c.categoria === categoria) &&
     (!fStato.value || c.stato === fStato.value) &&
     (!fInt.value || c.interfacce.includes(fInt.value)) &&
     // Ogni parola cercata deve comparire da qualche parte (ricerca "AND").
     q.every((parola) => indiceRicerca.get(c.id).includes(parola)));
   lista.replaceChildren(...visibili.map(scheda));
   const pezzi = DATI.reduce((t, c) => t + c.quantita, 0);
-  conteggio.textContent = `${visibili.length} di ${DATI.length} componenti · ${pezzi} pezzi in totale`;
+  const filtrato = visibili.length !== DATI.length;
+  conteggio.textContent = filtrato
+    ? `${visibili.length} di ${DATI.length} componenti`
+    : `${DATI.length} componenti · ${pezzi} pezzi`;
   vuoto.hidden = visibili.length > 0;
-  vuoto.textContent = DATI.length === 0 ? "Nessun componente in archivio." : "Nessun risultato.";
+  if (!vuoto.hidden) {
+    const nessuno = DATI.length === 0;
+    vuoto.replaceChildren(
+      icona(nessuno ? ICONE.microcontrollore : "M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13zM20 20l-4.8-4.8"),
+      el("p", null,
+        el("strong", { testo: nessuno ? "Nessun componente in archivio." : "Nessun risultato." }),
+        el("span", { testo: nessuno ? "Aggiungi una scheda in componenti/ e rigenera il catalogo."
+                                    : "Prova un'altra parola o togli qualche filtro." })));
+  }
 }
 
+// ── Dettaglio ──
 const dialog = document.getElementById("dettaglio");
+let origine = null;
 document.getElementById("chiudi").addEventListener("click", () => dialog.close());
 dialog.addEventListener("click", (e) => { if (e.target === dialog) dialog.close(); });
+dialog.addEventListener("close", () => { dialog.style.transform = ""; if (origine) origine.focus({ preventScroll: true }); });
 
 const urlSicuro = (u) => /^https?:\/\//i.test(u || "") ? u : null;
+function voci(righe) {
+  const dl = el("dl", { class: "voci" });
+  for (const [k, v] of righe) {
+    if (!v || (Array.isArray(v) && !v.length)) continue;
+    dl.append(el("div", { class: "voce" }, el("dt", { testo: k }),
+      Array.isArray(v) ? el("dd", null, etichette(v)) : el("dd", { testo: v })));
+  }
+  return dl.children.length ? el("div", { class: "gruppo" }, dl) : null;
+}
 
-function apri(c) {
+function apri(c, btn) {
+  origine = btn;
   document.getElementById("dlg-titolo").textContent = c.nome;
+  document.getElementById("dlg-sotto").textContent = [c.produttore, c.modello].filter(Boolean).join(" · ");
   const corpo = document.getElementById("dlg-corpo");
   const parti = [];
 
   // Ordine deciso nella spec: pinout → note → dati tecnici → quantità/posizione → foto → datasheet.
   if (c.pinout) {
-    const img = el("img", { class: "pinout", src: c.pinout, alt: "Pinout " + c.nome });
+    const img = el("img", { class: "pinout", src: c.pinout, alt: "Pinout di " + c.nome });
     img.addEventListener("click", () => img.classList.toggle("zoom"));
-    parti.push(el("div", { class: "zoom-box" }, img));
+    parti.push(el("div", { class: "zoom-box" }, img), el("p", { class: "suggerimento", testo: "Tocca il pinout per ingrandirlo" }));
   }
-  const b = badge(c.stato);
-  if (b) parti.push(el("p", null, b));
-  if (c.note) parti.push(el("h3", { testo: "Note" }), el("p", { class: "note", testo: c.note }));
+  const st = STATI[c.stato];
+  if (st.path) parti.push(el("div", { class: "avviso " + c.stato }, icona(st.path),
+    el("div", null, el("strong", { testo: st.testo }), el("span", { testo: st.spiega }))));
+  if (c.note) parti.push(el("h3", { class: "sezione", testo: "Note" }), el("div", { class: "gruppo" }, el("p", { class: "note", testo: c.note })));
 
-  const righe = [
-    ["Categoria", c.categoria], ["Produttore", c.produttore], ["Modello", c.modello],
-    ["Tensione", c.tensione], ["Interfacce", c.interfacce.join(", ")], ["Tag", c.tag.join(", ")],
-  ];
-  const dl = el("dl");
-  for (const [k, v] of righe) if (v) dl.append(el("dt", { testo: k }), el("dd", { testo: v }));
-  parti.push(el("h3", { testo: "Dati tecnici" }), dl);
-
-  const dl2 = el("dl");
-  dl2.append(el("dt", { testo: "Quantità" }), el("dd", { testo: String(c.quantita) }));
-  if (c.posizione) dl2.append(el("dt", { testo: "Posizione" }), el("dd", { testo: c.posizione }));
-  if (c.progetti.length) dl2.append(el("dt", { testo: "Progetti" }), el("dd", { testo: c.progetti.join(", ") }));
-  parti.push(el("h3", { testo: "Magazzino" }), dl2);
-
-  if (c.foto) parti.push(el("h3", { testo: "Foto" }), el("img", { class: "foto", src: c.foto, alt: "Foto " + c.nome }));
+  const tecnici = voci([
+    ["Categoria", NOMI_CATEGORIA[c.categoria]], ["Produttore", c.produttore], ["Modello", c.modello],
+    ["Tensione", c.tensione ? [c.tensione] : null], ["Interfacce", c.interfacce], ["Tag", c.tag.join(", ")],
+  ]);
+  if (tecnici) parti.push(el("h3", { class: "sezione", testo: "Specifiche" }), tecnici);
+  parti.push(el("h3", { class: "sezione", testo: "Magazzino" }),
+    voci([["Quantità", String(c.quantita)], ["Posizione", c.posizione], ["Progetti", c.progetti.join(", ")]]));
+  if (c.foto) parti.push(el("h3", { class: "sezione", testo: "Foto" }),
+    el("div", { class: "gruppo" }, el("img", { class: "foto", src: c.foto, alt: "Foto di " + c.nome })));
 
   const query = [c.produttore, c.modello || c.nome, "datasheet pdf"].filter(Boolean).join(" ");
-  const azioni = el("div", { class: "azioni" });
   const ds = urlSicuro(c.datasheet_url);
-  if (ds) azioni.append(el("a", { href: ds, target: "_blank", rel: "noopener", testo: "Datasheet" }));
-  azioni.append(el("a", {
-    class: ds ? "secondario" : null, target: "_blank", rel: "noopener",
-    href: "https://duckduckgo.com/?q=" + encodeURIComponent(query), testo: "Cerca datasheet aggiornato",
-  }));
-  parti.push(el("h3", { testo: "Datasheet" }), azioni);
+  const freccia = "M7 17 17 7M9 7h8v8";
+  const azioni = el("div", { class: "azioni" });
+  if (ds) azioni.append(el("a", { class: "pieno", href: ds, target: "_blank", rel: "noopener" }, el("span", { testo: "Apri datasheet" }), icona(freccia)));
+  azioni.append(el("a", { class: ds ? "tinto" : "pieno", target: "_blank", rel: "noopener",
+    href: "https://duckduckgo.com/?q=" + encodeURIComponent(query) },
+    icona("M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13zM20 20l-4.8-4.8"), el("span", { testo: "Cerca datasheet aggiornato" })));
+  parti.push(azioni);
 
   corpo.replaceChildren(...parti);
   corpo.scrollTop = 0;
   dialog.showModal();
 }
 
-for (const n of [cerca, fCat, fStato, fInt]) n.addEventListener("input", aggiorna);
+// Trascina giù la testata per chiudere (sheets.md: "Support swiping to dismiss a sheet").
+(() => {
+  const testa = document.getElementById("testa");
+  let y0 = null, dy = 0;
+  testa.addEventListener("pointerdown", (e) => {
+    if (e.target.closest("button") || matchMedia("(min-width: 720px)").matches) return;
+    y0 = e.clientY; dy = 0; testa.setPointerCapture(e.pointerId); dialog.style.transition = "none";
+  });
+  testa.addEventListener("pointermove", (e) => {
+    if (y0 === null) return;
+    dy = Math.max(0, e.clientY - y0); dialog.style.transform = `translateY(${dy}px)`;
+  });
+  const fine = () => {
+    if (y0 === null) return;
+    y0 = null; dialog.style.transition = "transform .2s ease";
+    if (dy > 110) dialog.close(); else dialog.style.transform = "";
+  };
+  testa.addEventListener("pointerup", fine); testa.addEventListener("pointercancel", fine);
+})();
+
+// La barra mostra il bordo solo quando il contenuto le scorre sotto.
+const barra = document.getElementById("barra");
+new IntersectionObserver(([e]) => barra.classList.toggle("staccata", !e.isIntersecting))
+  .observe(document.querySelector(".titolo"));
+
+svuota.addEventListener("click", () => { cerca.value = ""; aggiorna(); cerca.focus(); });
+for (const n of [cerca, fStato, fInt]) n.addEventListener("input", aggiorna);
 aggiorna();
 
 // Il service worker (copia offline sul telefono) funziona solo via http/https:

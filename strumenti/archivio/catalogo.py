@@ -106,8 +106,8 @@ def genera_manifest() -> str:
         "start_url": "./",
         "scope": "./",
         "display": "standalone",
-        "background_color": "#f6f7f5",
-        "theme_color": "#1f6f5c",
+        "background_color": "#f2f2f7",
+        "theme_color": "#f2f2f7",
         "icons": [{"src": "icona.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any"}],
     }
     return json.dumps(manifest, ensure_ascii=False, indent=2) + "\n"

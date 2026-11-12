@@ -63,7 +63,8 @@ def test_file_locale(catalogo, pagina):
 
     page.select_option("#f-stato", "")
     page.fill("#cerca", "nessunacorrispondenza")
-    assert page.locator("#vuoto").inner_text() == "Nessun risultato."
+    testo = page.locator("#vuoto").inner_text()
+    assert testo.startswith("Nessun risultato.") and "filtro" in testo
 
     page.fill("#cerca", "esp32")
     page.locator("#lista .scheda").first.click()
@@ -103,7 +104,7 @@ def test_offline_con_service_worker(catalogo, pagina):
         context.set_offline(True)
         page.reload()
         assert visibili(page) == 3
-        assert page.locator("#lista img.anteprima").first.evaluate("i => i.complete && i.naturalWidth > 0")
+        assert page.locator("#lista .anteprima img").first.evaluate("i => i.complete && i.naturalWidth > 0")
     finally:
         server.shutdown()
 
@@ -140,3 +141,32 @@ def test_rete_lenta_usa_la_copia_salvata(catalogo, pagina):
     finally:
         ritardo["s"] = 0
         server.shutdown()
+
+
+def test_filtro_categoria_e_chiusura_trascinando(catalogo, pagina):
+    page = pagina.new_page(viewport={"width": 390, "height": 844}, has_touch=True)
+    page.goto((catalogo / "index.html").as_uri())
+    page.click('.cat[data-cat="attuatore"]')
+    assert visibili(page) == 1
+    assert page.get_attribute('.cat[data-cat="attuatore"]', "aria-pressed") == "true"
+    page.click('.cat[data-cat=""]')
+    assert visibili(page) == 3
+
+    page.locator("#lista .scheda").first.click()
+    assert page.locator("#dettaglio").is_visible()
+    page.wait_for_timeout(400)  # fine dell'animazione di apertura
+    box = page.locator("#testa").bounding_box()
+    x, y = box["x"] + 60, box["y"] + 10
+    page.mouse.move(x, y)
+    page.mouse.down()
+    page.mouse.move(x, y + 200, steps=8)
+    page.mouse.up()
+    page.wait_for_timeout(300)
+    assert not page.locator("#dettaglio").is_visible()
+
+
+def test_sigla_chip_senza_pinout(catalogo, pagina):
+    page = pagina.new_page()
+    page.goto((catalogo / "index.html").as_uri())
+    # "Modulo relè 5V": nessun modello; "5V" ha lettere e cifre ma è troppo corta → prima parola.
+    assert page.locator('.scheda[data-id="rele-5v"] .ic text').text_content() == "MODULO"

@@ -1,4 +1,4 @@
-const CACHE = "archivio-9b25bdf65a72";
+const CACHE = "archivio-7038b79707c6";
 const FILE = ["./", "icona.svg", "index.html", "manifest.webmanifest"];
 
 self.addEventListener("install", (e) => {
