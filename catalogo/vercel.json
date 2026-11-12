@@ -1,0 +1,8 @@
+{
+  "headers": [
+    {
+      "source": "/(index.html|sw.js|manifest.webmanifest)?",
+      "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+name: Catalogo
+
+# Rigenera il catalogo e lo pubblica su Vercel a ogni modifica del branch principale.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Un solo aggiornamento alla volta: due push ravvicinati non si pestano i piedi.
+concurrency:
+  group: catalogo
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  genera-e-pubblica:
+    # Il commit "chore: rigenera catalogo" fatto da questa Action non deve
+    # farne partire un'altra (altrimenti si innescherebbe un ciclo infinito).
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: strumenti/requirements.txt
+
+      - name: Installa dipendenze
+        run: pip install -r strumenti/requirements.txt
+
+      - name: Test
+        run: python -m pytest -m "not browser" -q
+
+      - name: Genera catalogo
+        run: python strumenti/genera_catalogo.py
+
+      - name: Committa il catalogo aggiornato
+        run: |
+          if [ -n "$(git status --porcelain catalogo INVENTARIO.md)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add catalogo INVENTARIO.md
+            git commit -m "chore: rigenera catalogo"
+            git push
+          fi
+
+      - name: Pubblica su Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::warning::Secret VERCEL_TOKEN mancante: catalogo generato ma non pubblicato."
+            exit 0
+          fi
+          npx --yes vercel@50.38.0 deploy catalogo --prod --yes --token "$VERCEL_TOKEN"

@@ -35,3 +35,21 @@ Il modo più semplice: descrivilo a Claude o mandagli le foto. A mano:
 Componenti sconosciuti: metti le foto in `da_identificare/` e chiedi a Claude.
 
 L'elenco completo dei campi è in `CLAUDE.md`.
+
+## Pubblicazione su Vercel (da fare una volta)
+
+Ad ogni push sul branch `main` la GitHub Action `.github/workflows/catalogo.yml` esegue i test,
+rigenera il catalogo e lo pubblica. Per collegarla a Vercel:
+
+1. Su vercel.com crea un account (piano Hobby gratuito) e un token in
+   *Account Settings → Tokens*.
+2. In locale, nella cartella del repo: `npx vercel link --cwd catalogo` → crea il progetto.
+   Gli ID si trovano poi in `catalogo/.vercel/project.json` (`orgId`, `projectId`).
+   La cartella `.vercel/` è ignorata da git: non va committata.
+3. Nel repo GitHub, *Settings → Secrets and variables → Actions*, aggiungi
+   `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`.
+4. Su Vercel, nel progetto, *Settings → Deployment Protection*: lasciando la protezione
+   standard, l'indirizzo di produzione `<progetto>.vercel.app` resta aperto a chi ha il link.
+
+Senza i secret l'Action genera comunque il catalogo, ma non lo pubblica.
+Il sito non ha password: non scrivere dati sensibili nelle schede.
